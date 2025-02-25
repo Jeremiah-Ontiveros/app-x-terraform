@@ -38,6 +38,9 @@ jobs:
   deploy_prod:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    permissions:
+      issues: write
+      contents: read
     steps:
     - uses: actions/checkout@v4
     - name: Set up Terraform
@@ -54,6 +57,8 @@ jobs:
       if: github.event_name == 'push'
       uses: trstringer/manual-approval@v1
       with:
+        secret: ${{ secrets.GITHUB_TOKEN }}
+        approvers: ${{ secrets.APPROVERS }}  # Set this in Secrets (e.g., "your-username")
         minimum-approvals: 1
         issue-title: "Approve Production Deployment"
     - name: Terraform Apply (Production)
