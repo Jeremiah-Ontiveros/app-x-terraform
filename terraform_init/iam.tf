@@ -39,67 +39,12 @@ resource "aws_iam_user_policy_attachment" "iam_access" {
   policy_arn = "arn:aws:iam::aws:policy/IAMFullAccess"
 }
 
-resource "aws_iam_policy" "dynamodb_access" {
-  name        = "DeploymentUserDynamoDBAccess"
-  description = "Custom policy for DynamoDB access"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:CreateTable",
-          "dynamodb:DescribeTable",
-          "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          "dynamodb:Query",
-          "dynamodb:Scan",
-          "dynamodb:UpdateTable",
-          "dynamodb:DeleteTable",
-          "dynamodb:DeleteItem"
-        ]
-        Resource = "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/app-x-dynamodb-*"
-      }
-    ]
-  })
-}
 
-resource "aws_iam_user_policy_attachment" "dynamodb_access" {
+resource "aws_iam_user_policy_attachment" "dynamodb_full_access" {
   user       = aws_iam_user.aws_deployment_user.name
-  policy_arn = aws_iam_policy.dynamodb_access.arn
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
-resource "aws_iam_policy" "dynamodb_access_state" {
-  name        = "DeploymentUserDynamoDBAccessTerraformState"
-  description = "Custom policy for DynamoDB access"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:CreateTable",
-          "dynamodb:DescribeTable",
-          "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          "dynamodb:Query",
-          "dynamodb:Scan",
-          "dynamodb:UpdateTable",
-          "dynamodb:DeleteTable",
-          "dynamodb:DeleteItem"
-        ]
-        Resource = "arn:aws:dynamodb:us-east-2:${data.aws_caller_identity.current.account_id}:table/app-x-state"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_user_policy_attachment" "dynamodb_access_state" {
-  user       = aws_iam_user.aws_deployment_user.name
-  policy_arn = aws_iam_policy.dynamodb_access_state.arn
-}
-
-# Create an access key for programmatic access
 resource "aws_iam_access_key" "aws_deployment_user_access_key" {
   user = aws_iam_user.aws_deployment_user.name
 }
