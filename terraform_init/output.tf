@@ -14,5 +14,5 @@ output "aws_deployment_user_access_key_id" {
 
 output "aws_deployment_user_secret_access_key" {
   value     = aws_iam_access_key.aws_deployment_user_access_key.secret
-  sensitive = true # Marks the output as sensitive to hide it in logs
+  sensitive = true 
 }
