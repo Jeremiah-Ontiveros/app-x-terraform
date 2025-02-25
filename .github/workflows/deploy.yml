@@ -1,22 +1,21 @@
-# This is a basic workflow to help you get started with Actions
 name: Deploy Multi-Environment Infrastructure
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:  # Allows manual trigger for production
+    branches: ["main"]
+  workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy (dev, staging, prod)'
+        description: 'Environment to deploy (dev, staging, production)'
         required: true
         default: 'dev'
 jobs:
-  deploy:
+  deploy_non_prod:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        env: ["dev", "staging", "prod"]
+        env: ["dev", "staging"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Terraform
@@ -30,21 +29,37 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Terraform Apply
-      if: matrix.env != 'prod' || github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
       run: terraform apply -auto-approve
       working-directory: environments/${{ matrix.env }}
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy_prod:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.5.0"
+    - name: Terraform Init
+      run: terraform init
+      working-directory: environments/production
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Production Approval
-      if: matrix.env == 'prod' && github.event_name != 'workflow_dispatch'
+      if: github.event_name == 'push'
       uses: trstringer/manual-approval@v1
       with:
-        environment: production
+        minimum-approvals: 1
+        issue-title: "Approve Production Deployment"
     - name: Terraform Apply (Production)
-      if: matrix.env == 'prod' && steps.approval.outputs.approved == 'true'
+      if: github.event_name == 'workflow_dispatch' || steps.approval.outputs.approved == 'true'
       run: terraform apply -auto-approve
-      working-directory: environments/prod
+      working-directory: environments/production
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
