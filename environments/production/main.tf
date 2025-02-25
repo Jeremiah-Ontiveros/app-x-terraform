@@ -17,14 +17,6 @@ module "iam" {
   env    = var.env
 }
 
-data "aws_eks_cluster" "eks_cluster" {
-  name = "app-x-${var.env}-cluster"
-}
-
-data "aws_eks_cluster_auth" "eks_auth" {
-  name = data.aws_eks_cluster.eks_cluster.name
-}
-
 module "eks" {
   source            = "../../modules/eks"
   env               = var.env
@@ -45,9 +37,9 @@ module "dynamodb" {
 
 
 provider "kubernetes" {
-  host                   = data.aws_eks_cluster.eks_cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.eks_auth.token
+  host                   = module.eks.eks_cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.eks_cluster_certificate_authority)
+  token                  = module.eks.eks_auth_token
 }
 
 resource "aws_lb" "app_lb" {

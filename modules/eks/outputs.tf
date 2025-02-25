@@ -9,3 +9,9 @@ output "eks_cluster_certificate_authority" {
 output "eks_cluster_name" {
   value = aws_eks_cluster.main.name
 }
+
+output "eks_auth_token" {
+  description = "EKS authentication token"
+  value       = data.aws_eks_cluster_auth.eks_auth.token
+  sensitive   = true  
+}

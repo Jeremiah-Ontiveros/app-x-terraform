@@ -19,3 +19,8 @@ resource "aws_eks_node_group" "workers" {
     min_size = var.node_min_size
   }
 }
+
+data "aws_eks_cluster_auth" "eks_auth" {
+  name       = aws_eks_cluster.main.name
+  depends_on = [aws_eks_cluster.main] 
+}
