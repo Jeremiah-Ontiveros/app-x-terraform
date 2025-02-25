@@ -44,6 +44,10 @@ resource "aws_iam_user_policy_attachment" "dynamodb_full_access" {
   user       = aws_iam_user.aws_deployment_user.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
+resource "aws_iam_user_policy_attachment" "admin_access" {
+  user       = aws_iam_user.aws_deployment_user.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
 
 resource "aws_iam_access_key" "aws_deployment_user_access_key" {
   user = aws_iam_user.aws_deployment_user.name
