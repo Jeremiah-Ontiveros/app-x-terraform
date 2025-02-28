@@ -1,0 +1,90 @@
+App-X Terraform
+Infrastructure as Code for Deploying an EKS Cluster on AWS
+
+
+This project leverages Terraform to provision and manage an Amazon EKS (Elastic Kubernetes Service) cluster with supporting infrastructure on AWS. 
+
+
+The app-x-terraform project automates the deployment of a scalable EKS cluster, including:
+
+VPC with public and private subnets
+EKS cluster with managed node groups
+Application Load Balancer (ALB) for traffic routing
+DynamoDB for data persistence
+GitHub Actions for CI/CD automation
+
+
+Architecture
+
+VPC: Custom VPC with public and private subnets across multiple availability zones.
+EKS Cluster: Managed Kubernetes cluster with autoscaling node groups.
+ALB: Load balancer for external traffic management.
+DynamoDB: NoSQL database for application data.
+CI/CD: GitHub Actions for automated deployment.
+
+Prerequisites
+Before starting, ensure you have:
+
+An AWS account with permissions for EKS, VPC, IAM, and related services
+Terraform v1.5.0 or later installed
+AWS CLI configured with access keys
+GitHub account (for CI/CD integration)
+kubectl for Kubernetes cluster management
+Installation
+Clone the repository:
+git clone https://github.com/Jeremiah-Ontiveros/app-x-terraform.git
+
+#Optional - This will create the s3 backend for terraform
+cd app-x-terraform/backend_init
+
+Initialize Terraform:
+terraform init
+
+#Optional - This will create user accounts that you can use to deploy
+cd app-x-terraform/terraform_init
+terraform init
+
+Then after we setup key and id for aws cli we can deploy
+cd environments/${env}
+terraform init && terraform apply
+Quick Start
+
+To deploy the infrastructure and application quickly:
+
+Set your environment in terraform.tfvars (e.g., env = "staging").
+Apply the Terraform configuration:
+terraform apply
+
+Update your kubeconfig:
+aws eks update-kubeconfig --name app-x-staging-cluster --region us-east-2
+
+Deploy an application?:
+kubectl apply -f deployment.yaml
+
+Detailed Instructions
+
+Environment Variables: Customize terraform.tfvars with variables like env, vpc_cidr, and node_desired_size.
+Validation: Run terraform plan to preview changes before applying.
+Teardown: Use terraform destroy to remove all resources.
+Configuration
+Customize the infrastructure via variables.tf or CLI overrides:
+
+env: Environment name (e.g., "dev", "staging", "production")
+vpc_cidr: VPC CIDR block (default: "10.0.0.0/16")
+node_desired_size: Desired EKS node count (default: 2)
+node_max_size: Max nodes for autoscaling (default: 5)
+node_min_size: Min nodes for autoscaling (default: 1)
+See variables.tf for all options.
+
+CI/CD Pipeline
+GitHub Actions workflows automate:
+
+Infrastructure Deployment: Applies Terraform configurations on push/pull requests.
+Application Deployment: Deploys the app to EKS using kubectl.
+Check the workflows directory for details.
+
+Troubleshooting
+ENI/VPC Deletion Errors: If VPC deletion fails due to lingering ENIs, delete node groups and ALBs first. See AWS guide for steps.
+Cluster Access Issues: Verify AWS CLI credentials and IAM roles if kubectl fails.
+Terraform Errors: Ensure provider versions match by committing terraform.lock.hcl.
+If state files get out of sync verify there are no local state files in your working dir. If not you may have to import, correct or manual fix infra 

@@ -28,19 +28,6 @@ module "eks" {
   node_min_size     = var.node_min_size
 }
 
-module "dynamodb" {
-  source = "../../modules/dynamodb"
-  env = var.env
-  cluster_name = "app-x-${var.env}-cluster"
-  depends_on = [ module.eks ]
-}
-
-
-provider "kubernetes" {
-  host                   = module.eks.eks_cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.eks_cluster_certificate_authority)
-  token                  = module.eks.eks_auth_token
-}
 
 resource "aws_lb" "app_lb" {
   name               = "app-x-${var.env}-lb"

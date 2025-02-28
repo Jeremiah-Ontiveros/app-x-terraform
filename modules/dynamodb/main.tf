@@ -94,3 +94,16 @@ resource "aws_iam_role" "app_x_dynamodb_role" {
     }]
   })
 }
+
+resource "aws_iam_user_policy" "eks_access" {
+  name   = "EKSDescribeAccess"
+  user   = "aws_deployment_user"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "eks:DescribeCluster"
+      Resource = "arn:aws:eks:us-east-2:123456789012:cluster/app-x-*"
+    }]
+  })
+}
