@@ -23,7 +23,7 @@ resource "aws_dynamodb_table" "app-x-aws_dynamodb_table" {
 }
 
 resource "aws_iam_policy" "app_x_dynamodb_policy" {
-  name        = "app-x-dynodb-policy"
+  name        = "app-x-dynodb-policy-${var.env}"
   description = "Allows access to DynamoDB"
 
   policy = jsonencode({
@@ -69,14 +69,14 @@ resource "aws_iam_openid_connect_provider" "eks_oidc_provider" {
 # Ensure Service Account exists in Kubernetes
 resource "kubernetes_service_account" "app_x_db_sa" {
   metadata {
-    name      = "app-x-db-sa"
+    name      = "app-x-db-sa-${var.env}"
     namespace = "default"
   }
 }
 
 # Update the IAM Role for Kubernetes Authentication
 resource "aws_iam_role" "app_x_dynamodb_role" {
-  name = "app-x-dynodb-role"
+  name = "app-x-dynodb-role-${var.env}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -96,7 +96,7 @@ resource "aws_iam_role" "app_x_dynamodb_role" {
 }
 
 resource "aws_iam_user_policy" "eks_access" {
-  name   = "EKSDescribeAccess"
+  name   = "EKSDescribeAccess-${var.env}"
   user   = "aws_deployment_user"
   policy = jsonencode({
     Version = "2012-10-17"
